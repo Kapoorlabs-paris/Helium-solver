@@ -1,0 +1,71 @@
+!p.font=1;
+!p.charthick=2.0;
+!p.charsize=1.5;
+pi=3.1415926;
+
+noofoutputs=long(30000);
+
+noofcolors=60;
+loadct, 3, ncolors=noofcolors;
+colors=noofcolors-1-indgen(noofcolors)
+
+set_plot, "ps";
+
+device, filename="Linear_response_without_interaction.ps", /color, bits=8;
+
+
+
+
+
+nooflines=long(noofoutputs);
+noofcolumns=long(8);
+
+tab=dblarr(noofcolumns,nooflines);
+
+filename='obser_linear_response_oww.dat';
+
+ openr, l, filename, /get_lun;
+ readf, l, tab;
+ close, /all;
+
+
+
+
+
+t=tab(0,*);
+dipole_x=tab(5,*);
+dipole_y=tab(6,*);
+
+
+
+dipoletotal= dipole_x;;+dipole_y;
+
+fftresult=fft(hanning(noofoutputs)*(dipoletotal), /double, /inverse)
+
+fftresultII=fftresult*conj(fftresult)
+
+frequ=indgen(noofoutputs)
+frequ=frequ-noofoutputs/2
+
+frequ=(2*3.1415926/(t(noofoutputs-1)-t(0)))*frequ
+
+
+  fftresultIII=dblarr(noofoutputs)
+
+  fftresultIII(noofoutputs/2:noofoutputs-1)=fftresultII(0:noofoutputs/2-1)
+  fftresultIII(0:noofoutputs/2-1)=fftresultII(noofoutputs/2:noofoutputs-1)
+    
+  
+plot,t, dipoletotal
+
+plot,frequ,fftresultIII,xrange=[0,3],/ylog
+
+;;oplot,[0.940,0.940],[1.0E-28,1.0E+16],linestyle=2,color=20
+
+
+device, /close;
+
+
+
+set_plot, "x";
+end

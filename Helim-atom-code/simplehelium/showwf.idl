@@ -1,0 +1,133 @@
+!p.charsize=1.4;
+!p.charthick=3.5;
+!p.t=0;
+!x.thick=3.0
+!y.thick=3.0
+pi=3.1415926;
+
+noofcolors=30;
+loadct, 5, ncolors=noofcolors;
+colors=noofcolors-1-indgen(noofcolors)
+
+set_plot, "ps";
+device, filename="test.ps", /color, bits=8;
+
+
+ Mp = 1836.0;
+scalingfactor=1.0;;sqrt(0.5*Mp);
+deltax=0.2; 
+deltay=0.2;
+
+
+noofx=long(300);
+noofy=long(300);
+
+
+x=lindgen(noofx);
+x=(x-0.5*noofx)*deltax;
+y=lindgen(noofy);
+y=(y-0.5*noofy)*deltay;
+
+nooflines=long(noofx*noofy);
+noofcolumns=long(2);
+nooflines2=long(noofx);
+tab2=dblarr(noofcolumns,nooflines2);
+
+tab=dblarr(noofcolumns,nooflines);
+wfI=complexarr(noofx);
+wfII=complexarr(noofy);
+
+wftot=complexarr(noofx,noofy);
+wf2=complexarr(noofx,noofy);
+wfnet=complexarr(noofy,noofx);
+wf1=complexarr(noofx,noofy);
+nuclprobabdens=complexarr(noofx,noofy);
+elecprobabdens=complexarr(noofx);
+elecprobabdens2=complexarr(noofy);
+filename= 'wf.dat';
+
+
+ openr, l, filename, /get_lun;
+ readf, l, tab;
+ close, /all;
+
+
+
+for i=long(0),noofx-1 do begin
+for j=long(0),noofy-1 do begin
+
+  wf1(i,j)=complex(tab(0,i*noofy+j),tab(1,i*noofy+j));
+
+
+endfor
+endfor
+
+
+filename2= 'wf_excited.dat';
+
+
+ openr, l, filename2, /get_lun;
+ readf, l, tab;
+ close, /all;
+
+
+
+for i=long(0),noofx-1 do begin
+for j=long(0),noofy-1 do begin
+
+  wf2(i,j)=complex(tab(0,i*noofy+j),tab(1,i*noofy+j));
+
+
+endfor
+endfor
+
+
+probabdens2=abs(wf1)^2;
+probabdens=abs(wf2)^2;
+
+
+probabdens2=probabdens2/max(probabdens2)
+
+maxalogprobabdens2=max(alog10(probabdens2));
+  orderofmagn=7
+  levelsforlogprobabdens2=lindgen(noofcolors)
+  levelsforlogprobabdens2=levelsforlogprobabdens2/(1.0*(noofcolors-1))
+  levelsforlogprobabdens2=maxalogprobabdens2-orderofmagn+orderofmagn*levelsforlogprobabdens2
+
+
+    contour, alog10(probabdens2(*,*)),x,y, levels=levelsforlogprobabdens2, c_colors=colors, /fill, /closed,pos=[0.15,0.15,0.85,0.98], ytitle='Y (a.u)', xtitle='X (a.u)', xstyle=1, ystyle=1,xrange=[-20,20],yrange=[-20,20]
+
+
+
+colorbar, ncolors=noofcolors, maxrange=levelsforlogprobabdens2(0), minrange=levelsforlogprobabdens2(noofcolors-1), position=[0.95,0.15,0.98,0.98], /vertical, format='(D8.2)'
+
+ ;;contour, alog10(wf2(*,*)),x,y, levels=levelsforlogprobabdens2, c_colors=colors, /fill, /closed,pos=[0.15,0.15,0.85,0.98], ytitle='Y (a.u)', xtitle='X (a.u)', xstyle=1, ystyle=1
+
+
+
+;;colorbar, ncolors=noofcolors, maxrange=levelsforlogprobabdens2(0), minrange=levelsforlogprobabdens2(noofcolors-1), position=[0.95,0.15,0.98,0.98], /vertical, format='(D8.2)'
+
+
+
+probabdens=probabdens/max(probabdens)
+
+maxalogprobabdens=max(alog10(probabdens));
+  orderofmagn=7
+  levelsforlogprobabdens=lindgen(noofcolors)
+  levelsforlogprobabdens=levelsforlogprobabdens/(1.0*(noofcolors-1))
+  levelsforlogprobabdens=maxalogprobabdens-orderofmagn+orderofmagn*levelsforlogprobabdens
+
+
+    contour, alog10(probabdens(*,*)),x,y, levels=levelsforlogprobabdens, c_colors=colors, /fill, /closed,pos=[0.15,0.15,0.85,0.98], ytitle='Y (a.u)', xtitle='X (a.u)', xstyle=1, ystyle=1,xrange=[-20,20],yrange=[-20,20]
+
+
+
+colorbar, ncolors=noofcolors, maxrange=levelsforlogprobabdens(0), minrange=levelsforlogprobabdens(noofcolors-1), position=[0.95,0.15,0.98,0.98], /vertical, format='(D8.2)'
+
+
+device, /close;
+
+
+
+set_plot, "x";
+end

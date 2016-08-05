@@ -1,0 +1,107 @@
+
+!p.font=1;
+!p.charthick=2.0;
+!p.charsize=1.5;
+;;!y.ticks=1
+;;!y.tickv=3
+pi=3.1415926;
+
+
+noofcolors=30;
+loadct, 5, ncolors=noofcolors;
+colors=noofcolors-1-indgen(noofcolors)
+
+set_plot, "ps";
+device, filename="wf_laser_400.ps", /color, bits=8;
+
+
+ Mp = 1836.0;
+scalingfactor=1.0;;sqrt(0.5*Mp);
+deltax=0.2; 
+deltay=0.2;
+
+
+noofx=long(1500);
+noofy=long(1500);
+
+
+x=lindgen(noofx);
+x=(x-0.5*noofx)*deltax;
+y=lindgen(noofy);
+y=(y-0.5*noofy)*deltay;
+
+nooflines=long(noofx*noofy);
+noofcolumns=long(2);
+nooflines2=long(noofx);
+tab2=dblarr(noofcolumns,nooflines2);
+
+tab=dblarr(noofcolumns,nooflines);
+wfI=complexarr(noofx);
+wfII=complexarr(noofy);
+
+wftot=complexarr(noofx,noofy);
+wf2=complexarr(noofx,noofy);
+wfnet=complexarr(noofy,noofx);
+wf1=complexarr(noofx,noofy);
+nuclprobabdens=complexarr(noofx,noofy);
+elecprobabdens=complexarr(noofx);
+elecprobabdens2=complexarr(noofy);
+filename='wf_laser_400.dat'
+
+
+;;'wf_w1.7k0.71grtake1.dat';
+;;'/raid/raid1/varun/programs/heliumeit/res/wf_w1.356k1.09.dat'
+
+
+
+ openr, l, filename, /get_lun;
+ readf, l, tab;
+ close, /all;
+
+
+
+for i=long(0),noofx-1 do begin
+for j=long(0),noofy-1 do begin
+
+  wf1(i,j)=complex(tab(0,i*noofy+j),tab(1,i*noofy+j));
+
+
+endfor
+endfor
+;;wf1=wf1/max(wf1);
+probabdens=wf1;
+
+
+probabdens2=abs(wf1)^2;
+
+levelsforprobabdens=lindgen(noofcolors)
+	       levelsforprobabdens=levelsforprobabdens/(1.0*(noofcolors-1))
+		       levelsforprobabdens=min(probabdens)+(max(probabdens)-min(probabdens))*levelsforprobabdens
+		        
+		        
+
+
+  CONTOUR,(probabdens(*,*)),x,y,levels=levelsforprobabdens, c_colors=colors, /fill, /closed,pos=[0.15,0.15,0.85,0.98];;,yrange=[-20,20],xrange=[10,400]
+
+
+colorbar, ncolors=noofcolors, minrange=min(probabdens), maxrange=max(probabdens), position=[0.95,0.15,0.98,0.98],  /vertical, format='(D8.2)'
+
+
+
+maxalogprobabdens2=max(alog10(probabdens2));
+  orderofmagn=7
+  levelsforlogprobabdens2=lindgen(noofcolors)
+  levelsforlogprobabdens2=levelsforlogprobabdens2/(1.0*(noofcolors-1))
+  levelsforlogprobabdens2=maxalogprobabdens2-orderofmagn+orderofmagn*levelsforlogprobabdens2
+
+
+   contour, alog10(probabdens2(*,*)),x,y, levels=levelsforlogprobabdens2, c_colors=colors, /fill, /closed,pos=[0.15,0.15,0.85,0.98], yrange=[-100,100],xrange=[-100,100]
+
+
+
+colorbar, ncolors=noofcolors, maxrange=levelsforlogprobabdens2(0), minrange=levelsforlogprobabdens2(noofcolors-1), position=[0.95,0.15,0.98,0.98], /vertical, format='(D8.2)'
+
+close, /all;
+device, /close;
+
+end
